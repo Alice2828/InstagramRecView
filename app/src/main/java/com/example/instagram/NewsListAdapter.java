@@ -1,31 +1,56 @@
 package com.example.instagram;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsViewHolder> {
     private List<News> newsList;
+    private List<News> newsLiked;
 
+
+    private boolean hearted=false;
     @Nullable
     private ItemClickListener listener;
+    private LikedListAdapter.LikeClickListener listenerLike;
+    private FragmentLike fragmentlike;
+    List<Fragment> list=new ArrayList<Fragment>();
+private FragmentManager manager;
+
 
     public NewsListAdapter(List<News> newsList){
         this.newsList=newsList;
     }
-    public NewsListAdapter(List<News> newsList, @Nullable ItemClickListener listener) {
+
+    public NewsListAdapter(List<News> newsList, @Nullable ItemClickListener listener,FragmentLike fragmentLike,FragmentManager manager) {
         this.newsList = newsList;
         this.listener = listener;
+        this.fragmentlike=fragmentLike;
+        this.manager=manager;
+
     }
 
     @NonNull
@@ -42,22 +67,43 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsVi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NewsViewHolder holder,final int position) {
-        final News news = newsList.get(position);
-        Picasso.with(holder.logo.getContext()).load(news.getLogo()).into(holder.logo);
+    public void onBindViewHolder(@NonNull final NewsViewHolder holder,final int position) {
+
+        final News news=newsList.get(position);
         holder.author.setText(news.getAuthor());
-        Picasso.with(holder.image.getContext()).load(news.getImage()).into(holder.image);
         holder.data.setText(news.getData());
-        holder.likes.setText("Нравится: "+String.valueOf(news.getLikes()));
-        holder.comment.setText(String.valueOf(news.getComment()));
+        Glide.with(holder.image.getContext()).load(news.getImage()).into(holder.image);
+        Glide.with(holder.logo.getContext()).load(news.getLogo()).into(holder.logo);
+        holder.likes.setText("Нравится: "+news.getLikes());
+        holder.comment.setText("Посмотреть все (30)");
+
+        holder.like.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(),"Like",Toast.LENGTH_SHORT).show();
+                if(!hearted) {
+
+                    Glide.with(holder.like.getContext()).load(R.drawable.hearted).into(holder.like);
+                    hearted=true;
+
+                }
+                else {
+                    Glide.with(holder.like.getContext()).load(R.drawable.heart).into(holder.like);
+                    hearted=false;
+
+
+                }
+            }
+        });
+
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (listener != null) {
-                    listener.itemClick(position, news);
-                }
+                if (listener!=null)
+                    listener.itemClick(position,news);
+
             }
         });
     }
@@ -76,6 +122,7 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsVi
         TextView data;
         TextView likes;
         TextView comment;
+        ImageButton like;
         public NewsViewHolder(@NonNull View itemView) {
 
            super(itemView);
@@ -85,9 +132,14 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsVi
              data=itemView.findViewById(R.id.data);
              likes=itemView.findViewById(R.id.likes);
             comment=itemView.findViewById(R.id.comments);
+            like=itemView.findViewById(R.id.like);
         }
     }
+
     interface ItemClickListener {
         void itemClick(int position, News item);
+
     }
+
+
 }

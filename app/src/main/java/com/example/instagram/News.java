@@ -12,6 +12,7 @@ public class News implements Parcelable {
     private String data;
     private int likes;
     private int comment;
+    private boolean hearted=false;
 
     public News(int logo, String author, int image, String data, int likes, int comment) {
         this.logo = logo;
@@ -42,7 +43,10 @@ public class News implements Parcelable {
             return new News[size];
         }
     };
-
+public boolean getHeart()
+{
+    return hearted;
+}
     public int getLogo() {
         return logo;
     }
@@ -90,6 +94,8 @@ public class News implements Parcelable {
     public void setComment(int comment) {
         this.comment = comment;
     }
+
+    public void setheart(boolean hearted){this.hearted=hearted;}
 
     @Override
     public String toString() {
