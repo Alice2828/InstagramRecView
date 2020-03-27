@@ -1,48 +1,37 @@
 package com.example.instagram;
 
-import android.content.Context;
-import android.content.Intent;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class LikedListAdapter  extends RecyclerView.Adapter<LikedListAdapter.LikedNewsViewHolder>{
-    private List<News> newsList=new ArrayList<News>();
-    private List<News> newsLiked;
-
-
-    private boolean hearted=false;
+public class LikedListAdapter extends RecyclerView.Adapter<LikedListAdapter.LikedNewsViewHolder> {
+    private List<News> newsList;
+    private boolean hearted = false;
     @Nullable
-    private NewsListAdapter.ItemClickListener listener;
-    private LikedListAdapter.LikeClickListener listenerLike=null;
-    private FragmentLike fragmentlike;
-    List<Fragment> list=new ArrayList<Fragment>();
-    private FragmentManager manager;
+    private LikedListAdapter.ItemClickListener listener;
+    private @Nullable
+    FragmentLikeListener fragmentLikeListener;
 
+    ;
 
-    public LikedListAdapter(List<News> newsList){
-        this.newsList=newsList;
-    }
+    public LikedListAdapter(List<News> newsList, @Nullable ItemClickListener listener,
+                            FragmentLikeListener fragmentLikeListener) {
 
-    public LikedListAdapter(List<News> newsList, @Nullable NewsListAdapter.ItemClickListener listener) {
-
-        this.newsList=newsList;
+        this.newsList = newsList;
         this.listener = listener;
+        this.fragmentLikeListener = fragmentLikeListener;
 
 
     }
@@ -51,7 +40,7 @@ public class LikedListAdapter  extends RecyclerView.Adapter<LikedListAdapter.Lik
     @Override
 
     public LikedNewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.item_news,null,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_news, null, false);
         RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -63,64 +52,32 @@ public class LikedListAdapter  extends RecyclerView.Adapter<LikedListAdapter.Lik
     @Override
     public void onBindViewHolder(@NonNull final LikedNewsViewHolder holder, final int position) {
 
-        final News news=newsList.get(position);
+        final News news = newsList.get(getItemViewType(position));
         holder.author.setText(news.getAuthor());
-        holder.data.setText(news.getData());
+        String s = "<b>"+ news.getAuthor()+ "</b>" + " "+ news.getData();
+        holder.data.setText(Html.fromHtml(s));
+        holder.likeBtn.setImageResource(R.drawable.hearted);
         Glide.with(holder.image.getContext()).load(news.getImage()).into(holder.image);
         Glide.with(holder.logo.getContext()).load(news.getLogo()).into(holder.logo);
-        holder.likes.setText("Нравится: "+news.getLikes());
+        holder.likeCnt.setText("Нравится: " + news.getLikesCnt());
         holder.comment.setText("Посмотреть все (30)");
 
-//        holder.like.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(v.getContext(),"Like",Toast.LENGTH_SHORT).show();
-//
-//
-//                    Glide.with(holder.like.getContext()).load(R.drawable.hearted).into(holder.like);
-//                    hearted=true;
-//
-//                    Fragment fragLike = manager.findFragmentById(R.id.fragment_like);
-
-
-
-//                    ((RecyclerView)fragPage.getView().findViewById(R.id.recyclerView)).getAdapter().notifyDataSetChanged();
-                  //  ((RecyclerView)fragLike.getView().findViewById(R.id.recyclerView)).getAdapter().notifyDataSetChanged();
-
-
-//                     RecyclerView recView=((RecyclerView) fragLike.getView().findViewById(R.id.recyclerView));
-
-
-//
-//                    Glide.with(holder.logo.getContext()).load(news.getLogo()).into((ImageView) fragLike.getView().findViewById(R.id.logo));
-//                    Glide.with(holder.image.getContext()).load(news.getImage()).into((ImageView) fragLike.getView().findViewById(R.id.image));
-//                    Glide.with(holder.image.getContext()).load(news.getLikes()).into((ImageView) fragLike.getView().findViewById(R.id.like));
-
-//                    ((ImageView) fragLike.getView().findViewById(R.id.logo))
-//                            .setText("Access to Fragment 1 from Activity");
-//                    ((ImageView) fragLike.getView().findViewById(R.id.image))
-//                            .setText("Access to Fragment 1 from Activity");
-//                    ((TextView) fragLike.getView().findViewById(R.id.data))
-//                            .setText("Access to Fragment 1 from Activity");
-//                    ((TextView) fragLike.getView().findViewById(R.id.likes))
-//                            .setText("Access to Fragment 1 from Activity");
-//                    ((TextView) fragLike.getView().findViewById(R.id.comments))
-//                            .setText("Access to Fragment 1 from Activity");
-
-//
-//            }
-//        });
-
+        holder.likeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (fragmentLikeListener != null)
+                    fragmentLikeListener.removeItemLike(news);
+            }
+        });
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (listener!=null)
-                    listener.itemClick(position,news);
+                if (listener != null)
+                    listener.itemClick(position, news);
             }
         });
     }
-
 
 
     @Override
@@ -128,24 +85,25 @@ public class LikedListAdapter  extends RecyclerView.Adapter<LikedListAdapter.Lik
         return newsList.size();
     }
 
-    public class LikedNewsViewHolder extends RecyclerView.ViewHolder{
+    public class LikedNewsViewHolder extends RecyclerView.ViewHolder {
         ImageView logo;
         TextView author;
         ImageView image;
         TextView data;
-        TextView likes;
+        TextView likeCnt;
         TextView comment;
-        ImageButton like;
+        ImageButton likeBtn;
+
         public LikedNewsViewHolder(@NonNull View itemView) {
 
             super(itemView);
-            logo=itemView.findViewById(R.id.logo);
-            author=itemView.findViewById(R.id.author);
-            image=itemView.findViewById(R.id.image);
-            data=itemView.findViewById(R.id.data);
-            likes=itemView.findViewById(R.id.likes);
-            comment=itemView.findViewById(R.id.comments);
-            like=itemView.findViewById(R.id.like);
+            logo = itemView.findViewById(R.id.logo);
+            author = itemView.findViewById(R.id.author);
+            image = itemView.findViewById(R.id.image);
+            data = itemView.findViewById(R.id.data);
+            likeCnt = itemView.findViewById(R.id.likes);
+            comment = itemView.findViewById(R.id.comments);
+            likeBtn = itemView.findViewById(R.id.likeBtn);
         }
     }
 
@@ -153,8 +111,12 @@ public class LikedListAdapter  extends RecyclerView.Adapter<LikedListAdapter.Lik
         void itemClick(int position, News item);
 
     }
-    interface LikeClickListener {
-        void likeClick(int position, News item);
-
+    public int getItemViewType(int position){
+        return position;
     }
+    public interface FragmentLikeListener {
+        void removeItemLike(News news);
+    }
+
+
 }

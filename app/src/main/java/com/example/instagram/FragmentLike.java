@@ -13,6 +13,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,57 +28,70 @@ import java.util.List;
  */
 
 
-
 public class FragmentLike extends Fragment {
 
     private RecyclerView recyclerView;
     private LikedListAdapter adapter;
 
-    private NewsListAdapter.ItemClickListener listener = null;
+    private LikedListAdapter.ItemClickListener listener = null;
+    private LikedListAdapter.FragmentLikeListener fragmentLikeListener = null;
 
 
-
-    List<News> news=new ArrayList<News>();
-
-    public FragmentLike(List<News> news){
-
-        this.news=news;
-    }
+    List<News> newsList;
 
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@Nullable LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-       final ViewGroup rootView=(ViewGroup) inflater.inflate(R.layout.fragment_fragment_like, container, false);
-//
-//        listener = new NewsListAdapter.ItemClickListener() {
-//            @Override
-//            public void itemClick(int position, News item) {
-//                Intent intent = new Intent(rootView.getContext(), NewsDetailActivity.class);
-//                intent.putExtra("news", item);
-//                intent.putExtra("image", item.getImage());
-//                startActivity(intent);
-//
-//            }
-//        };
-        recyclerView=rootView.findViewById(R.id.recyclerView);
+        final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_fragment_like, container, false);
+        recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
 
-        adapter = new LikedListAdapter( news, listener);
+        listener = new LikedListAdapter.ItemClickListener() {
+            @Override
+            public void itemClick(int position, News item) {
+                Intent intent = new Intent(getActivity(), NewsDetailActivity.class);
+                intent.putExtra("news", item);
+                startActivity(intent);
+            }
+        };
 
+
+        fragmentLikeListener = new LikedListAdapter.FragmentLikeListener() {
+            @Override
+            public void removeItemLike(News news) {
+                ((MainActivity) getActivity()).removeItemLike(news);
+            }
+        };
+        newsList = new ArrayList<News>();
+        adapter = new LikedListAdapter(newsList, listener, fragmentLikeListener);
         recyclerView.setAdapter(adapter);
-
-//        News item = new News();
-//        int insertIndex = 2;
-//        data.add(insertIndex, item);
-//        adapter.notifyItemInserted(insertIndex);
         return rootView;
     }
 
 
+    public void saveNews(News news) {
+        newsList.add(news);
+        recyclerView.getAdapter().notifyItemInserted(newsList.size() - 1);
+    }
 
+    public void removeNews(News news) {
+        if (newsList.indexOf(news)==0){
+            newsList.remove(news);
+        } else {
+            int position = newsList.indexOf(news);
+            newsList.remove(news);
+            recyclerView.getAdapter().notifyItemRemoved(position);
+        }
+    }
+    public void removeLike(News news){
+        int n = newsList.indexOf(news);
+        this.removeNews(news);
+        adapter.notifyItemRemoved(n);
+    }
 
 
 }

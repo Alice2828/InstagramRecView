@@ -4,23 +4,38 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class News implements Parcelable {
+    public static List<News> newsList;
     private int logo;
     private String author;
     private int image;
     private String data;
-    private int likes;
+    private int likesCnt;
     private int comment;
-    private boolean hearted=false;
+    private boolean hearted = false;
+    private int likeBtn;
+
+    public int getLikeBtn() {
+        return likeBtn;
+    }
+
+    public void setLikeBtn(int likeBtn) {
+        this.likeBtn = likeBtn;
+    }
+
 
     public News(int logo, String author, int image, String data, int likes, int comment) {
         this.logo = logo;
         this.author = author;
         this.image = image;
         this.data = data;
-        this.likes = likes;
+        this.likesCnt = likes;
         this.comment = comment;
+        this.likeBtn = R.drawable.heart;
+
     }
 
     protected News(Parcel in) {
@@ -28,7 +43,7 @@ public class News implements Parcelable {
         author = in.readString();
         image = in.readInt();
         data = in.readString();
-        likes = in.readInt();
+        likesCnt = in.readInt();
         comment = in.readInt();
     }
 
@@ -43,10 +58,14 @@ public class News implements Parcelable {
             return new News[size];
         }
     };
-public boolean getHeart()
-{
-    return hearted;
-}
+
+    public boolean getHeart() {
+        return hearted;
+    }
+    public void setHeart(boolean heart) {
+        hearted=heart;
+    }
+
     public int getLogo() {
         return logo;
     }
@@ -63,8 +82,8 @@ public boolean getHeart()
         return data;
     }
 
-    public int getLikes() {
-        return likes;
+    public int getLikesCnt() {
+        return likesCnt;
     }
 
     public int getComment() {
@@ -87,15 +106,17 @@ public boolean getHeart()
         this.data = data;
     }
 
-    public void setLikes(int likes) {
-        this.likes = likes;
+    public void setLikesCnt(int likes) {
+        this.likesCnt = likes;
     }
 
     public void setComment(int comment) {
         this.comment = comment;
     }
 
-    public void setheart(boolean hearted){this.hearted=hearted;}
+    public void setheart(boolean hearted) {
+        this.hearted = hearted;
+    }
 
     @Override
     public String toString() {
@@ -104,7 +125,7 @@ public boolean getHeart()
                 ", author='" + author + '\'' +
                 ", image='" + image + '\'' +
                 ", data='" + data + '\'' +
-                ", likes=" + likes +
+                ", likesCnt=" + likesCnt +
                 ", comment=" + comment +
                 '}';
     }
@@ -120,7 +141,7 @@ public boolean getHeart()
         dest.writeString(author);
         dest.writeInt(image);
         dest.writeString(data);
-        dest.writeInt(likes);
+        dest.writeInt(likesCnt);
         dest.writeInt(comment);
     }
 
